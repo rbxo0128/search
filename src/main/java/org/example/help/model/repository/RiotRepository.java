@@ -8,21 +8,18 @@ import org.example.help.util.APIClient;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 
 public class RiotRepository implements APIClient {
     private RiotRepository() {}
     private static final RiotRepository instance = new RiotRepository();
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+
 
     public static RiotRepository getInstance() {
         return instance;
     }
 
-    public String callAPI(RiotAPIParam param) throws JsonProcessingException {
+    public String callAPI(RiotAPIParam param)  {
         String url = "";
         String token = dotenv.get("RIOT_KEY");
         String method = "GET";

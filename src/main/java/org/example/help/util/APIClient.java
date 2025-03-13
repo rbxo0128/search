@@ -3,7 +3,6 @@ package org.example.help.util;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.example.help.model.dto.APIClientParam;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -26,7 +25,7 @@ public interface APIClient {
         getLogger().severe(message);
     }
 
-    default public String callAPI(APIClientParam param) {
+    default String callAPI(APIClientParam param) {
         try {
             HttpResponse<String> response = httpClient.send(buildRequest(param), HttpResponse.BodyHandlers.ofString());
             info("%d".formatted(response.statusCode()));
@@ -35,7 +34,7 @@ public interface APIClient {
             error(e.getMessage());
             throw new RuntimeException(e);
         }
-    };
+    }
 
     private HttpRequest buildRequest(APIClientParam param) {
         return HttpRequest.newBuilder()
