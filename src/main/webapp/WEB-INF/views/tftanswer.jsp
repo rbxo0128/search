@@ -1,5 +1,5 @@
 <%@ page import="java.util.Map" %>
-<%@ page import="java.util.List" %>%>
+<%@ page import="java.util.List" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
@@ -316,7 +316,7 @@
             %>
             <tr>
                 <td>
-                    <a class="summoner-name" href="<%= request.getContextPath()%>/answer?summonerName=<%= player.get("summoner") %>%23<%= player.get("summonertag") %>"
+                    <a class="summoner-name" href="<%= request.getContextPath()%>/tft/answer?summonerName=<%= player.get("summoner") %>%23<%= player.get("summonertag") %>"
                        title="<%= player.get("summoner") %>#<%= player.get("summonertag") %>">
                         <%= player.get("summoner") %>#<%= player.get("summonertag") %>
                     </a>
@@ -329,7 +329,7 @@
                         for(String champ : champions) {
                     %>
                     <div class="champion-cell">
-                        <img class="champion-img" src="https://ddragon.leagueoflegends.com/cdn/15.5.1/img/champion/<%= champ %>.png"
+                        <img class="champion-img" src="https://ndkoonhkiadlqwhqxlsp.supabase.co/storage/v1/object/public/tft//<%= champ %>.png"
                              alt="<%= champ %>" title="<%= champ %>">
                     </div>
                     <%
