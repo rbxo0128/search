@@ -39,6 +39,9 @@ public class RootController extends Controller {
         req.setCharacterEncoding("UTF-8");
         resp.setCharacterEncoding("UTF-8");
 
+        HttpSession session = req.getSession();
+        session.removeAttribute("error");
+
         String servletPath = req.getServletPath();
 
         String summonerName = req.getParameter("summonerName");

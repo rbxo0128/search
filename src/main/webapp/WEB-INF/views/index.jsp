@@ -121,11 +121,20 @@
     <form method="post">
         <label for="summonerName">소환사 이름:</label>
         <input type="text" id="summonerName" name="summonerName" placeholder="소환사 이름을 입력하세요" required>
+        <% if(session.getAttribute("error") != null) {%>
+            <%=session.getAttribute("error")%>
+        <% } %>
         <button type="submit">검색</button>
     </form>
     <footer>
         본 서비스는 Riot Games의 공식 사이트가 아니며, Riot Games의 API를 활용한 비공식 서비스입니다.
     </footer>
 </div>
+<script>
+    document.querySelector("form").addEventListener("submit", function(event) {
+        let input = document.getElementById("summonerName");
+        input.value = input.value.replace(/\s+/g, "");
+    });
+</script>
 </body>
 </html>

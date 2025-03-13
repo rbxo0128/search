@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.example.help.model.dto.puuidResponse;
 import org.example.help.service.RiotService;
 
@@ -29,12 +30,7 @@ public class TFTAnswerController extends Controller {
         resp.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html");
         String summonerName = req.getParameter("summonerName");
-
-        if (summonerName == null || summonerName.trim().isEmpty()) {
-            System.out.println("summonerName is null or empty");
-            resp.sendRedirect(req.getContextPath() + "/");
-            return;
-        }
+        HttpSession session = req.getSession();
 
         String summonerResponse = "";
         String puuid = "";
@@ -42,8 +38,9 @@ public class TFTAnswerController extends Controller {
             summonerResponse = riotService.getSummonerName(summonerName);
             puuid = objectMapper.readValue(summonerResponse, puuidResponse.class).puuid();
         }catch (Exception e){
+            session.setAttribute("error", "소환사 이름을 다시 입력해주세요.");
             System.out.println("summonerName is wrong");
-            resp.sendRedirect(req.getContextPath() + "/");
+            resp.sendRedirect("/");
             return;
         }
 

@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.example.help.model.dto.puuidResponse;
 import org.example.help.service.RiotService;
 
@@ -39,18 +40,22 @@ public class AnswerController extends Controller {
         log(summonerName);
         String summonerResponse = "";
         String puuid = "";
+        String[] records;
+        HttpSession session = req.getSession();
         try {
             summonerResponse = riotService.getSummonerName(summonerName);
             puuid = objectMapper.readValue(summonerResponse, puuidResponse.class).puuid();
+            String match = riotService.getMatch(puuid);
+            records = objectMapper.readValue(match, String[].class);
         }catch (Exception e){
+            session.setAttribute("error", "소환사 이름을 다시 입력해주세요.");
             System.out.println("summonerName is wrong");
-            resp.sendRedirect(req.getContextPath() + "/");
+            resp.sendRedirect("/");
             return;
         }
 
 
-        String match = riotService.getMatch(puuid);
-        String[] records = objectMapper.readValue(match, String[].class);
+
         List<List<Map<String, Object>>> matches = new ArrayList<>();
 
 // 스레드 풀 생성
