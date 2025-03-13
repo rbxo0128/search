@@ -357,7 +357,7 @@
     %>
 
     <div class="text-center">
-        <a href="<%= request.getContextPath()%>" class="btn">
+        <a href="/" class="btn">
             <i class="fas fa-redo"></i> 다시 검색하기
         </a>
     </div>

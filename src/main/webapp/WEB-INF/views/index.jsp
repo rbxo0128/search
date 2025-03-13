@@ -110,10 +110,10 @@
 <body>
 <div class="container">
     <div class="logo">
-        <a href= "<%=request.getContextPath()%>">
+        <a href= "/">
             <img src="https://i.namu.wiki/i/1bMt0wDwA1EX24-0Q4vf6WssH6hE3_gsJOA3O4ICRvXRm1FEspw8VqJ7SbjEi4OueIB11To7Fxh6XsEHRJfmrv-bjk4x4RoqOmZyp009QQV-iLGGTtIN1H9Zff6q_08nnpa22P_s5ZSnM3nySm6r3A.webp" alt="LoL Logo">
         </a>
-        <a href= "<%=request.getContextPath()%>/tft">
+        <a href= "/tft">
             <img src="https://i.namu.wiki/i/0wddn0ilh67JQ4HwtzU5uerp-s9JYPnXWgQhZ4SyzcqsOH1RAMHDlR3ce4pQ68C0_eeq5zz1ngzW8LEgymD-dCqg2OyWZkZl7HD5USU_qqx_eqwzFuLdtC-NcdUqYKEnMV9nYzWk30oDq-pPVFiBDw.svg" alt="LoL Logo">
         </a>
     </div>
