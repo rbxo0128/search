@@ -29,7 +29,7 @@ public class RootController extends Controller {
 
         String summonerName = req.getParameter("summonerName");
         String encodedName = URLEncoder.encode(summonerName, StandardCharsets.UTF_8);
-        log(summonerName);
+
         resp.sendRedirect(req.getContextPath() + "/answer?summonerName=" + encodedName);
     }
 }

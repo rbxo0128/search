@@ -19,17 +19,14 @@ public class RiotService {
     }
 
     public String getSummonerName(String name) throws JsonProcessingException {
-        String responseText = repository.callAPI(new RiotAPIParam(name, ModelType.SUMMONERNAME));
-        return responseText;
+        return repository.callAPI(new RiotAPIParam(name, ModelType.SUMMONERNAME));
     }
 
     public String getMatch(String puuid) throws JsonProcessingException {
-        String responseText = repository.callAPI(new RiotAPIParam(puuid, ModelType.MATCH));
-        return responseText;
+        return repository.callAPI(new RiotAPIParam(puuid, ModelType.MATCH));
     }
 
     public String getMatchResult(String matchID) throws JsonProcessingException {
-        String responseText = repository.callAPI(new RiotAPIParam(matchID, ModelType.MATCHID));
-        return responseText;
+        return repository.callAPI(new RiotAPIParam(matchID, ModelType.MATCHID));
     }
 }
