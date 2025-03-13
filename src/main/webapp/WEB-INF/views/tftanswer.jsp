@@ -1,13 +1,10 @@
 <%@ page import="java.util.Map" %>
-<%@ page import="java.util.List" %>
+<%@ page import="java.util.List" %>%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<!DOCTYPE html>
 <html>
 <head>
+    <title>Title</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LoL 전적 검색</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
             --primary: #0A1428;
@@ -100,14 +97,6 @@
             overflow: hidden; /* 넘치는 내용 숨김 */
             text-overflow: ellipsis; /* 넘치는 텍스트에 ... 표시 */
         }
-
-        /* 컬럼 너비 고정 */
-        th:nth-child(1), td:nth-child(1) { width: 20%; } /* 소환사 */
-        th:nth-child(2), td:nth-child(2) { width: 20%; } /* 챔피언 */
-        th:nth-child(3), td:nth-child(3) { width: 20%; } /* KDA */
-        th:nth-child(4), td:nth-child(4) { width: 10%; } /* 승리 */
-        th:nth-child(5), td:nth-child(5) { width: 15%; } /* 골드 */
-        th:nth-child(6), td:nth-child(6) { width: 15%; } /* 피해량 */
 
         tr:last-child td {
             border-bottom: none;
@@ -240,6 +229,11 @@
             text-align: center;
         }
 
+        #champions{
+            display: flex;
+            flex-direction: row;
+        }
+
         @media (max-width: 768px) {
             table {
                 font-size: 0.8rem;
@@ -265,18 +259,18 @@
             }
 
             /* 모바일에서 컬럼 너비 조정 */
-            th:nth-child(1), td:nth-child(1) { width: 35%; }
-            th:nth-child(2), td:nth-child(2) { width: 30%; }
-            th:nth-child(3), td:nth-child(3) { width: 25%; }
-            th:nth-child(4), td:nth-child(4) { width: 10%; }
+            th:nth-child(1), td:nth-child(1) { width: 30%; }
+            th:nth-child(2), td:nth-child(2) { width: 10%; }
+            th:nth-child(3), td:nth-child(3) { width: 10%; }
+            th:nth-child(4), td:nth-child(4) { width: 50%; }
         }
     </style>
 </head>
 <body>
 <div class="container">
     <header>
-        <h1><i class="fas fa-trophy"></i> LoL 전적 검색</h1>
-        <p>소환사의 최근 전적 정보를 확인하세요</p>
+        <h1><i class="fas fa-trophy"></i> TFT 전적 검색</h1>
+        <p>소환사의 최근 TFT 전적 정보를 확인하세요</p>
     </header>
 
     <%
@@ -284,79 +278,64 @@
         if (matches != null && !matches.isEmpty()) {
             int matchNum = 1;
             for (List<Map<String, Object>> match : matches) {
-                // Determine if match has any winners to display match result
-                boolean blueTeamWin = false;
+                // 각 경기의 공통 정보는 첫 플레이어 데이터에 저장되어 있음.
+                long gameDatetime = 0;
+                int gameLength = 0;
                 String queueType = "";
-
-                for (Map<String, Object> player : match) {
-                    queueType = (String) player.get("queueType");
-                    if ((boolean) player.get("win")) {
-                        blueTeamWin = true;
-                        break;
-                    }
-                    else{
-                        blueTeamWin = false;
-                        break;
-                    }
+                if (!match.isEmpty()) {
+                    Map<String, Object> firstPlayer = match.get(0);
+                    gameDatetime = (Long) firstPlayer.get("gameDatetime");
+                    gameLength = (Integer) firstPlayer.get("gameLength");
+                    queueType = (String) firstPlayer.get("queueType");
                 }
     %>
     <div class="match-container">
         <div class="match-header">
             <h3>게임 #<%= matchNum++ %></h3>
-            <span><%= queueType%></span>
-            <span><%= blueTeamWin ? "블루팀 승리" : "레드팀 승리" %></span>
+            <div>
+                <span><strong>큐 타입:</strong> <%= queueType %></span>
+                <span style="margin-left: 15px;"><strong>게임 길이:</strong> <%= gameLength %>초</span>
+                <span style="margin-left: 15px;"><strong>시작 시간:</strong> <%= new java.util.Date(gameDatetime) %></span>
+            </div>
         </div>
         <table>
             <thead>
             <tr>
-                <th>소환사</th>
-                <th>챔피언</th>
-                <th>KDA</th>
-                <th>승리</th>
-                <th class="hide-mobile">골드</th>
-                <th class="hide-mobile">피해량</th>
+                <th style="width: 30%">소환사</th>
+                <th style="width: 10%">순위</th>
+                <th style="width: 10%">레벨</th>
+                <th style="width: 50%">사용한 챔피언</th>
             </tr>
             </thead>
             <tbody>
             <%
                 for (Map<String, Object> player : match) {
-                    boolean win = (boolean) player.get("win");
-                    int kills = (int) player.get("kills");
-                    int deaths = (int) player.get("deaths");
-                    int assists = (int) player.get("assists");
-
-                    // Calculate KDA ratio
-                    float kda = (deaths == 0) ? (kills + assists) : (float)(kills + assists) / deaths;
+                    int placement = (Integer) player.get("placement");
+                    int level = (Integer) player.get("level");
+                    List<String> champions = (List<String>) player.get("champions");
             %>
-            <tr class="<%= win ? "win" : "lose" %>">
+            <tr>
                 <td>
-                    <a class="summoner-name" href="<%= request.getContextPath()%>/answer?summonerName=<%=player.get("summoner")%>%23<%= player.get("summonertag")%>" title="<%= player.get("summoner")%>#<%= player.get("summonertag")%>">
-                        <%= player.get("summoner")%>#<%= player.get("summonertag")%>
+                    <a class="summoner-name" href="<%= request.getContextPath()%>/answer?summonerName=<%= player.get("summoner") %>%23<%= player.get("summonertag") %>"
+                       title="<%= player.get("summoner") %>#<%= player.get("summonertag") %>">
+                        <%= player.get("summoner") %>#<%= player.get("summonertag") %>
                     </a>
                 </td>
-                <td>
+                <td><%= placement %> 등</td>
+                <td><%= level %></td>
+                <td id="champions">
+                    <%
+                        // 챔피언 이미지 아이콘 표시 (여러 개일 경우 반복)
+                        for(String champ : champions) {
+                    %>
                     <div class="champion-cell">
-                        <div class="champion-img-container">
-                            <img class="champion-img" src="https://ddragon.leagueoflegends.com/cdn/15.5.1/img/champion/<%=player.get("champ")%>.png" alt="<%= player.get("champ") %>">
-                        </div>
-                        <div class="champion-name" title="<%= player.get("champ") %>">
-                            <%= player.get("champ") %>
-                        </div>
+                        <img class="champion-img" src="https://ddragon.leagueoflegends.com/cdn/15.5.1/img/champion/<%= champ %>.png"
+                             alt="<%= champ %>" title="<%= champ %>">
                     </div>
+                    <%
+                        }
+                    %>
                 </td>
-                <td class="kda">
-                    <span style="color: #28a745;"><%= kills %></span> /
-                    <span style="color: #dc3545;"><%= deaths %></span> /
-                    <span style="color: #17a2b8;"><%= assists %></span>
-                    <div style="font-size: 0.8rem; color: <%= kda >= 3 ? "#FFD700" : (kda >= 2 ? "#C0C0C0" : "#CD7F32") %>;">
-                        <%= String.format("%.2f", kda) %> KDA
-                    </div>
-                </td>
-                <td class="<%= win ? "win-icon" : "lose-icon" %>">
-                    <%= win ? "<i class=\"fas fa-check-circle\"></i>" : "<i class=\"fas fa-times-circle\"></i>" %>
-                </td>
-                <td class="stats hide-mobile"><i class="fas fa-coins"></i> <%= String.format("%,d", player.get("gold")) %></td>
-                <td class="stats hide-mobile"><i class="fas fa-bolt"></i> <%= String.format("%,d", player.get("damage")) %></td>
             </tr>
             <%
                 }
@@ -369,7 +348,7 @@
     } else {
     %>
     <div class="no-matches">
-        <i class="fas fa-search" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 20px;"></i>
+        <i class="fas fa-search" style="font-size: 3rem; color: #999; margin-bottom: 20px;"></i>
         <h2>전적을 찾을 수 없습니다</h2>
         <p>소환사 이름을 다시 확인해 주세요.</p>
     </div>
@@ -383,19 +362,5 @@
         </a>
     </div>
 </div>
-<script>
-    function toggleMatch(element) {
-        // Get the next sibling (match details)
-        const matchDetails = element.nextElementSibling;
-
-        // Toggle display
-        if (matchDetails.style.display === 'block') {
-            matchDetails.style.display = 'none';
-        } else {
-            matchDetails.style.display = 'block';
-        }
-    }
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
 </body>
 </html>

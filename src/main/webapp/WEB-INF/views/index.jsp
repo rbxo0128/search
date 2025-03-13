@@ -12,8 +12,6 @@
             color: #F0E6D2;
             margin: 0;
             padding: 0;
-            background-image: url('');
-            background-size: cover;
             background-position: center;
             background-attachment: fixed;
         }
@@ -90,7 +88,9 @@
         }
 
         .logo {
-            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             margin-bottom: 20px;
         }
 
@@ -110,9 +110,14 @@
 <body>
 <div class="container">
     <div class="logo">
-        <img src="https://i.namu.wiki/i/1bMt0wDwA1EX24-0Q4vf6WssH6hE3_gsJOA3O4ICRvXRm1FEspw8VqJ7SbjEi4OueIB11To7Fxh6XsEHRJfmrv-bjk4x4RoqOmZyp009QQV-iLGGTtIN1H9Zff6q_08nnpa22P_s5ZSnM3nySm6r3A.webp" alt="LoL Logo">
+        <a href= "<%=request.getContextPath()%>">
+            <img src="https://i.namu.wiki/i/1bMt0wDwA1EX24-0Q4vf6WssH6hE3_gsJOA3O4ICRvXRm1FEspw8VqJ7SbjEi4OueIB11To7Fxh6XsEHRJfmrv-bjk4x4RoqOmZyp009QQV-iLGGTtIN1H9Zff6q_08nnpa22P_s5ZSnM3nySm6r3A.webp" alt="LoL Logo">
+        </a>
+        <a href= "<%=request.getContextPath()%>/tft">
+            <img src="https://i.namu.wiki/i/0wddn0ilh67JQ4HwtzU5uerp-s9JYPnXWgQhZ4SyzcqsOH1RAMHDlR3ce4pQ68C0_eeq5zz1ngzW8LEgymD-dCqg2OyWZkZl7HD5USU_qqx_eqwzFuLdtC-NcdUqYKEnMV9nYzWk30oDq-pPVFiBDw.svg" alt="LoL Logo">
+        </a>
     </div>
-    <h2>롤 전적 검색</h2>
+    <h2><%= session.getAttribute("gameMode") %> 전적검색</h2>
     <form method="post">
         <label for="summonerName">소환사 이름:</label>
         <input type="text" id="summonerName" name="summonerName" placeholder="소환사 이름을 입력하세요" required>

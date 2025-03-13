@@ -18,13 +18,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@WebServlet("/answer")
-public class AnswerController extends Controller {
+@WebServlet("/tft/answer")
+public class TFTAnswerController extends Controller {
     final static RiotService riotService = RiotService.getInstance();
     final static ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
         resp.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html");
@@ -36,7 +36,6 @@ public class AnswerController extends Controller {
             return;
         }
 
-        log(summonerName);
         String summonerResponse = "";
         String puuid = "";
         try {
@@ -48,12 +47,10 @@ public class AnswerController extends Controller {
             return;
         }
 
-
-        String match = riotService.getMatch(puuid);
+        String match = riotService.getTFTMatch(puuid);
         String[] records = objectMapper.readValue(match, String[].class);
         List<List<Map<String, Object>>> matches = new ArrayList<>();
 
-// 스레드 풀 생성
         ExecutorService executor = Executors.newFixedThreadPool(Math.min(records.length, 5)); // 최대 10개 스레드 사용
 
         try {
@@ -63,32 +60,35 @@ public class AnswerController extends Controller {
             for (String record : records) {
                 CompletableFuture<List<Map<String, Object>>> future = CompletableFuture.supplyAsync(() -> {
                     try {
-                        String matchresult = riotService.getMatchResult(record);
+                        String matchresult = riotService.getTFTResult(record);
                         JsonNode root = objectMapper.readTree(matchresult);
                         JsonNode info = root.get("info");
 
                         List<Map<String, Object>> matchData = new ArrayList<>();
 
+                        long gameDatetime = info.path("game_datetime").asLong(0);
+                        int gameLength = info.path("game_length").asInt(0);
+
                         String queueType;
                         switch (info.get("queueId").asInt()) {
-                            case 420:
-                                queueType = "솔로 랭크";
+                            case 0:
+                                queueType = "커스텀";
                                 break;
-                            case 440:
-                                queueType = "자유 랭크";
-                                break;
-                            case 400:
-                            case 430:
+                            case 1090:
                                 queueType = "일반";
                                 break;
-                            case 450:
-                                queueType = "칼바람 나락";
+
+                            case 1100:
+                                queueType = "랭크";
                                 break;
-                            case 900:
-                                queueType = "URF";
+                            case 1110:
+                                queueType = "초고속 모드";
                                 break;
-                            case 1300:
-                                queueType = "돌격! 넥서스";
+                            case 1120:
+                                queueType = "더블업";
+                                break;
+                            case 1130:
+                                queueType = "드래곤랜드";
                                 break;
                             default:
                                 queueType = "기타";
@@ -97,18 +97,25 @@ public class AnswerController extends Controller {
 
                         for (JsonNode player : info.get("participants")) {
                             Map<String, Object> playerData = new HashMap<>();
-                            playerData.put("summoner", player.get("riotIdGameName").asText());
-                            playerData.put("summonertag", player.get("riotIdTagline").asText());
-                            playerData.put("champ", player.get("championName").asText());
-                            playerData.put("kills", player.get("kills").asInt());
-                            playerData.put("deaths", player.get("deaths").asInt());
-                            playerData.put("assists", player.get("assists").asInt());
-                            playerData.put("win", player.get("win").asBoolean());
-                            playerData.put("gold", player.get("goldEarned").asInt());
-                            playerData.put("damage", player.get("totalDamageDealtToChampions").asInt());
+                            playerData.put("summoner", player.path("riotIdGameName").asText(""));
+                            playerData.put("summonertag", player.path("riotIdTagline").asText(""));
+                            playerData.put("placement", player.path("placement").asInt(0)); // 순위
+                            playerData.put("level", player.path("level").asInt(0)); // 레벨
+
+                            // 챔피언 목록 가져오기
+                            List<String> champions = new ArrayList<>();
+                            for (JsonNode unit : player.path("units")) {
+                                champions.add(unit.path("character_id").asText(""));
+                            }
+                            playerData.put("champions", champions);
+
+                            // 공통 게임 정보 추가
+                            playerData.put("gameDatetime", gameDatetime);
+                            playerData.put("gameLength", gameLength);
                             playerData.put("queueType", queueType);
 
                             matchData.add(playerData);
+
                         }
 
                         return matchData;
@@ -137,8 +144,9 @@ public class AnswerController extends Controller {
         } finally {
             executor.shutdown(); // 항상 스레드 풀을 종료합니다
         }
-
+        System.out.println(matches);
         req.setAttribute("matches", matches);
-        view(req, resp, "answer");
+
+        view(req, resp, "tftanswer");
     }
 }

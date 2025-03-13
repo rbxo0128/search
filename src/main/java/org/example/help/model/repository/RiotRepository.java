@@ -49,10 +49,15 @@ public class RiotRepository implements APIClient {
 
             case MATCHID:
                 url = "https://asia.api.riotgames.com/lol/match/v5/matches/%s".formatted(param.name());
-
                 break;
 
-            default:
+            case TFTMATCH:
+                url = "https://asia.api.riotgames.com/tft/match/v1/matches/by-puuid/%s/ids?start=0&count=10".formatted(param.name());
+                break;
+
+            case TFTMATCHID:
+                url = "https://asia.api.riotgames.com/tft/match/v1/matches/%s".formatted(param.name());
+                break;
 
         }
 
