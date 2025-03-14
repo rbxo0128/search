@@ -91,11 +91,12 @@
         }
 
         td {
-            padding: 12px 15px;
+            padding: 8px 10px;
             border-bottom: 1px solid var(--border);
             white-space: nowrap; /* 텍스트 줄바꿈 방지 */
             overflow: hidden; /* 넘치는 내용 숨김 */
             text-overflow: ellipsis; /* 넘치는 텍스트에 ... 표시 */
+            vertical-align: middle;
         }
 
         tr:last-child td {
@@ -114,6 +115,7 @@
 
         .champion-cell {
             display: flex;
+            min-height: 32px;
             align-items: center;
             gap: 10px;
             min-width: 0; /* 플렉스 아이템이 너무 작아지지 않도록 함 */
@@ -128,11 +130,10 @@
         }
 
         .champion-img {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            border: 2px solid var(--accent);
-            display: block; /* 인라인 요소의 여백 문제 해결 */
+            border: 1px solid var(--accent);
         }
 
         .champion-name {
@@ -232,6 +233,24 @@
         #champions{
             display: flex;
             flex-direction: row;
+            flex-wrap: nowrap;
+            align-items: center;
+            overflow-x: auto;
+            max-width: 100%;
+            white-space: nowrap;
+            min-height: 40px;
+        }
+
+        .champion-stars {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            padding: 0 3px;
+            font-size: 9px;
+            color: gold;
+            line-height: 1.2;
         }
 
         @media (max-width: 768px) {
@@ -259,10 +278,16 @@
             }
 
             /* 모바일에서 컬럼 너비 조정 */
-            th:nth-child(1), td:nth-child(1) { width: 30%; }
+            th:nth-child(1), td:nth-child(1) { width: 20%; }
             th:nth-child(2), td:nth-child(2) { width: 10%; }
             th:nth-child(3), td:nth-child(3) { width: 10%; }
-            th:nth-child(4), td:nth-child(4) { width: 50%; }
+            th:nth-child(4), td:nth-child(4) { width: 60%; }
+        }
+
+        .champion-container {
+            position: relative;
+            display: inline-block;
+            margin-right: 8px;
         }
     </style>
 </head>
@@ -288,14 +313,18 @@
                     gameLength = (Integer) firstPlayer.get("gameLength");
                     queueType = (String) firstPlayer.get("queueType");
                 }
+                int minutes = gameLength / 60;  // 분 계산
+                int seconds = gameLength % 60;
+                java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("MM월 dd일");
+                String formattedDate = dateFormat.format(new java.util.Date(gameDatetime));
     %>
     <div class="match-container">
         <div class="match-header">
             <h3>게임 #<%= matchNum++ %></h3>
             <div>
                 <span><strong>큐 타입:</strong> <%= queueType %></span>
-                <span style="margin-left: 15px;"><strong>게임 길이:</strong> <%= gameLength %>초</span>
-                <span style="margin-left: 15px;"><strong>시작 시간:</strong> <%= new java.util.Date(gameDatetime) %></span>
+                <span style="margin-left: 15px;"><strong>게임 길이:</strong> <%= minutes %>분 <%=seconds%>초</span>
+                <span style="margin-left: 15px;"><strong>게임 날짜:</strong> <%= formattedDate %></span>
             </div>
         </div>
         <table>
@@ -312,7 +341,7 @@
                 for (Map<String, Object> player : match) {
                     int placement = (Integer) player.get("placement");
                     int level = (Integer) player.get("level");
-                    List<String> champions = (List<String>) player.get("champions");
+                    List<String[]> champions = (List<String[]>) player.get("champions");
             %>
             <tr>
                 <td>
@@ -326,11 +355,31 @@
                 <td id="champions">
                     <%
                         // 챔피언 이미지 아이콘 표시 (여러 개일 경우 반복)
-                        for(String champ : champions) {
+                        for(String[] champ : champions) {
+                            String champName = champ[0];
+                            String champTier = champ[1];
+                            // 티어에 맞는 별 개수 생성
+                            int tierNum = 1;
+                            try {
+                                tierNum = Integer.parseInt(champTier);
+                            } catch (NumberFormatException e) {
+                                // 숫자가 아닌 경우 기본값 1로 설정
+                            }
+
+                            // 티어에 맞는 별 문자열 생성
+                            String tierStars = "";
+                            for(int i=0; i<tierNum; i++) {
+                                tierStars += "★";
+                            }
                     %>
-                    <div class="champion-cell">
-                        <img class="champion-img" src="https://ndkoonhkiadlqwhqxlsp.supabase.co/storage/v1/object/public/tft//<%= champ %>.png"
-                             alt="<%= champ %>" title="<%= champ %>">
+                    <div class="champion-container">
+                        <img class="champion-img" src="https://ndkoonhkiadlqwhqxlsp.supabase.co/storage/v1/object/public/tft//<%= champName %>.png"
+                             alt="<%= champName %>" title="<%= champName %> <%= tierNum %>성">
+                        <div class="champion-tier">
+                            <% for(int i=0; i<tierNum; i++) { %>
+                            <span class="champion-stars"><%=tierStars%></span>
+                            <% } %>
+                        </div>
                     </div>
                     <%
                         }

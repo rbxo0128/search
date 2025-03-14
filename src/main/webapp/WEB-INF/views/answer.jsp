@@ -270,6 +270,107 @@
             th:nth-child(3), td:nth-child(3) { width: 25%; }
             th:nth-child(4), td:nth-child(4) { width: 10%; }
         }
+
+        .rank-container {
+            background-color: var(--secondary);
+            border-radius: 10px;
+            margin-bottom: 30px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border);
+        }
+
+        .rank-title {
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .rank-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .rank-card {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            min-width: 300px;
+            background-color: rgba(10, 20, 40, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .rank-icon {
+            flex: 0 0 64px;
+            margin-right: 15px;
+        }
+
+        .tier-img {
+            width: 64px;
+            height: 64px;
+        }
+
+        .rank-info {
+            flex: 1;
+        }
+
+        .queue-type {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .tier-rank {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+
+        .league-points {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .win-loss {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .wins {
+            color: var(--win);
+            font-weight: bold;
+        }
+
+        .losses {
+            color: var(--lose);
+            font-weight: bold;
+        }
+
+        .win-rate {
+            color: #FFD700;
+            margin-left: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .rank-card {
+                min-width: 100%;
+            }
+
+            .tier-img {
+                width: 48px;
+                height: 48px;
+            }
+
+            .rank-icon {
+                flex: 0 0 48px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -279,6 +380,43 @@
         <p>소환사의 최근 전적 정보를 확인하세요</p>
     </header>
 
+    <%
+        List<Map<String, Object>> rankList = (List<Map<String, Object>>) request.getAttribute("rankData");
+
+        // 랭크 데이터가 있는 경우 출력
+        if (rankList != null && !rankList.isEmpty()) {
+    %>
+    <div class="rank-container">
+        <h2 class="rank-title"><i class="fas fa-trophy"></i> 소환사 랭크 정보</h2>
+        <div class="rank-list">
+            <% for(Map<String, Object> rank : rankList) {
+                String tier = (String)rank.get("tier");
+                String rankValue = (String)rank.get("rank");
+                String queueType = (String)rank.get("queueType");
+                int wins = (int)rank.get("wins");
+                int losses = (int)rank.get("losses");
+                int leaguePoints = (int)rank.get("leaguePoints");
+                int totalGames = wins + losses;
+                double winRate = totalGames > 0 ? (double)wins / totalGames * 100 : 0;
+            %>
+            <div class="rank-card">
+                <div class="rank-icon">
+                    <img src="https://ndkoonhkiadlqwhqxlsp.supabase.co/storage/v1/object/public/tier/<%= tier.toLowerCase() %>.png" alt="<%= tier %>" class="tier-img">
+                </div>
+                <div class="rank-info">
+                    <h3 class="queue-type"><%= queueType %></h3>
+                    <div class="tier-rank"><%= tier %> <%= rankValue %></div>
+                    <div class="league-points"><%= leaguePoints %> LP</div>
+                    <div class="win-loss">
+                        <span class="wins"><%= wins %>승</span> <span class="losses"><%= losses %>패</span>
+                        <span class="win-rate">(<%= String.format("%.1f", winRate) %>%)</span>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+        </div>
+    </div>
+    <% } %>
     <%
         List<List<Map<String, Object>>> matches = (List<List<Map<String, Object>>>) request.getAttribute("matches");
         if (matches != null && !matches.isEmpty()) {

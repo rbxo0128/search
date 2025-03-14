@@ -25,6 +25,10 @@ public class RiotService {
         return repository.callAPI(new RiotAPIParam(puuid, ModelType.MATCH));
     }
 
+    public String getRank(String puuid) throws JsonProcessingException {
+        return repository.callAPI(new RiotAPIParam(puuid, ModelType.RANK));
+    }
+
     public String getMatchResult(String matchID) throws JsonProcessingException {
         return repository.callAPI(new RiotAPIParam(matchID, ModelType.MATCHID));
     }

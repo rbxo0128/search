@@ -11,10 +11,7 @@ import org.example.help.model.dto.puuidResponse;
 import org.example.help.service.RiotService;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,6 +42,35 @@ public class AnswerController extends Controller {
         try {
             summonerResponse = riotService.getSummonerName(summonerName);
             puuid = objectMapper.readValue(summonerResponse, puuidResponse.class).puuid();
+            String rank  = riotService.getRank(puuid);
+
+            req.setAttribute("rank", rank);
+            JsonNode root = objectMapper.readTree(rank);
+
+            List<Map<String, Object>> rankData = new ArrayList<>();
+            if (root != null && root.isArray()) {
+                for (JsonNode node : root) {
+                    Map<String, Object> map = new HashMap<>();
+                    String queue = "";
+                    if (node.get("queueType").asText().equals("RANKED_SOLO_5x5")){
+                        queue = "솔로랭크";
+                    }
+                    else if(node.get("queueType").asText().equals("RANKED_FLEX_SR")){
+                        queue = "자유랭크";
+                    }
+                    else{
+                        queue = "기타";
+                    }
+                    map.put("queueType", queue);
+                    map.put("tier", node.get("tier").asText());
+                    map.put("rank", node.get("rank").asText());
+                    map.put("leaguePoints", node.get("leaguePoints").asInt());
+                    map.put("wins", node.get("wins").asInt());
+                    map.put("losses", node.get("losses").asInt());
+                    rankData.add(map);
+                }
+            }
+            req.setAttribute("rankData", rankData);
             String match = riotService.getMatch(puuid);
             records = objectMapper.readValue(match, String[].class);
         }catch (Exception e){

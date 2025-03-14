@@ -11,10 +11,7 @@ import org.example.help.model.dto.puuidResponse;
 import org.example.help.service.RiotService;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,7 +37,7 @@ public class TFTAnswerController extends Controller {
         }catch (Exception e){
             session.setAttribute("error", "소환사 이름을 다시 입력해주세요.");
             System.out.println("summonerName is wrong");
-            resp.sendRedirect("/");
+            resp.sendRedirect("/tft");
             return;
         }
 
@@ -94,15 +91,19 @@ public class TFTAnswerController extends Controller {
 
                         for (JsonNode player : info.get("participants")) {
                             Map<String, Object> playerData = new HashMap<>();
-                            playerData.put("summoner", player.path("riotIdGameName").asText(""));
-                            playerData.put("summonertag", player.path("riotIdTagline").asText(""));
-                            playerData.put("placement", player.path("placement").asInt(0)); // 순위
-                            playerData.put("level", player.path("level").asInt(0)); // 레벨
+                            playerData.put("summoner", player.path("riotIdGameName").asText());
+                            playerData.put("summonertag", player.path("riotIdTagline").asText());
+                            playerData.put("placement", player.path("placement").asInt()); // 순위
+                            playerData.put("level", player.path("level").asInt()); // 레벨
 
                             // 챔피언 목록 가져오기
-                            List<String> champions = new ArrayList<>();
+                            List<String[]> champions = new ArrayList<>();
+
                             for (JsonNode unit : player.path("units")) {
-                                champions.add(unit.path("character_id").asText(""));
+                                List<String> champ = new ArrayList<>();
+                                champ.add(unit.path("character_id").asText());
+                                champ.add(unit.path("tier").asText());
+                                champions.add(champ.toArray(new String[0]));
                             }
                             playerData.put("champions", champions);
 
@@ -114,6 +115,8 @@ public class TFTAnswerController extends Controller {
                             matchData.add(playerData);
 
                         }
+
+                        matchData.sort(Comparator.comparingInt(m -> (int) m.get("placement")));
 
                         return matchData;
                     } catch (Exception e) {

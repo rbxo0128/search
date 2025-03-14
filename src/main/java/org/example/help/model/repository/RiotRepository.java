@@ -59,6 +59,9 @@ public class RiotRepository implements APIClient {
                 url = "https://asia.api.riotgames.com/tft/match/v1/matches/%s".formatted(param.name());
                 break;
 
+            case RANK:
+                url = "https://kr.api.riotgames.com/lol/league/v4/entries/by-puuid/%s".formatted(param.name());
+                break;
         }
 
         return APIClient.super.callAPI(new APIClientParam(url, token, method, headers));
