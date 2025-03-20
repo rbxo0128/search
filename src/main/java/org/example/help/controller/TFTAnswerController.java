@@ -37,7 +37,7 @@ public class TFTAnswerController extends Controller {
         try {
             summonerResponse = riotService.getSummonerName(summonerName);
             puuid = objectMapper.readValue(summonerResponse, puuidResponse.class).puuid();
-
+            System.out.println("puuid = " + puuid);
             String riotID = riotService.getTFTID(puuid);
             JsonNode root = objectMapper.readTree(riotID);
             String summonerTFTID = root.get("id").asText();

@@ -46,9 +46,12 @@ public class AnswerController extends Controller {
         HttpSession session = req.getSession();
         try {
             summonerResponse = riotService.getSummonerName(summonerName);
+            System.out.println("session = " + summonerResponse);
             puuid = objectMapper.readValue(summonerResponse, puuidResponse.class).puuid();
+            System.out.println("session = " + puuid);
             String rank  = riotService.getRank(puuid);
             List<RankDTO> rankDataList = objectMapper.readValue(rank, new TypeReference<List<RankDTO>>() {});
+            System.out.println("rankDataList = " + rankDataList);
 
             req.setAttribute("rankData", rankDataList);
 
@@ -57,7 +60,7 @@ public class AnswerController extends Controller {
         }catch (Exception e){
             session.setAttribute("error", "소환사 이름을 다시 입력해주세요.");
             System.out.println("summonerName is wrong");
-            resp.sendRedirect("help_war_exploded/");
+            resp.sendRedirect("/");
             return;
         }
 
