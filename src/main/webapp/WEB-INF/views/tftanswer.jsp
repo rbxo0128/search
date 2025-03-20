@@ -1,5 +1,7 @@
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.List" %>
+<%@ page import="org.example.help.model.dto.RankDTO" %>
+<%@ page import="org.example.help.model.dto.TFTRankDTO" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
@@ -289,6 +291,68 @@
             display: inline-block;
             margin-right: 8px;
         }
+        .rank-container {
+            background-color: var(--secondary);
+            border-radius: 10px;
+            margin-bottom: 30px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border);
+        }
+
+        .rank-title {
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .rank-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .rank-card {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            min-width: 300px;
+            background-color: rgba(10, 20, 40, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .rank-icon {
+            flex: 0 0 64px;
+            margin-right: 15px;
+        }
+
+        .tier-img {
+            width: 64px;
+            height: 64px;
+        }
+
+        .rank-info {
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .rank-card {
+                min-width: 100%;
+            }
+
+            .tier-img {
+                width: 48px;
+                height: 48px;
+            }
+
+            .rank-icon {
+                flex: 0 0 48px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -297,7 +361,51 @@
         <h1><i class="fas fa-trophy"></i> TFT 전적 검색</h1>
         <p>소환사의 최근 TFT 전적 정보를 확인하세요</p>
     </header>
+    <%
+        List<TFTRankDTO> rankList = (List<TFTRankDTO>) request.getAttribute("rankData");
 
+        // 랭크 데이터가 있는 경우 출력
+        if (rankList != null && !rankList.isEmpty()) {
+    %>
+    <div class="rank-container">
+        <h2 class="rank-title"><i class="fas fa-trophy"></i> 소환사 랭크 정보</h2>
+        <div class="rank-list">
+            <% for(TFTRankDTO rank : rankList) {
+                String tier = rank.tier();
+                String rankValue = rank.rank();
+                String queueType = rank.queueType();
+                switch (queueType){
+                    case "RANKED_TFT_DOUBLE_UP":
+                        queueType = "더블업 랭크";
+                        break;
+                    case "RANKED_TFT":
+                        queueType = "솔로 랭크";
+                        break;
+                }
+                int wins = rank.wins();
+                int losses = rank.losses();
+                int leaguePoints = rank.leaguePoints();
+                int totalGames = wins + losses;
+                double winRate = totalGames > 0 ? (double)wins / totalGames * 100 : 0;
+            %>
+            <div class="rank-card">
+                <div class="rank-icon">
+                    <img src="https://ndkoonhkiadlqwhqxlsp.supabase.co/storage/v1/object/public/tier/<%= tier.toLowerCase() %>.png" alt="<%= tier %>" class="tier-img">
+                </div>
+                <div class="rank-info">
+                    <h3 class="queue-type"><%= queueType %></h3>
+                    <div class="tier-rank"><%= tier %> <%= rankValue %></div>
+                    <div class="league-points"><%= leaguePoints %> LP</div>
+                    <div class="win-loss">
+                        <span class="wins"><%= wins %>승</span> <span class="losses"><%= losses %>패</span>
+                        <span class="win-rate">(<%= String.format("%.1f", winRate) %>%)</span>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+        </div>
+    </div>
+    <% } %>
     <%
         List<List<Map<String, Object>>> matches = (List<List<Map<String, Object>>>) request.getAttribute("matches");
         if (matches != null && !matches.isEmpty()) {
@@ -345,7 +453,7 @@
             %>
             <tr>
                 <td>
-                    <a class="summoner-name" href="<%= request.getContextPath()%>/tft/answer?summonerName=<%= player.get("summoner") %>%23<%= player.get("summonertag") %>"
+                    <a class="summoner-name" href="/tft/answer?summonerName=<%= player.get("summoner") %>%23<%= player.get("summonertag") %>"
                        title="<%= player.get("summoner") %>#<%= player.get("summonertag") %>">
                         <%= player.get("summoner") %>#<%= player.get("summonertag") %>
                     </a>

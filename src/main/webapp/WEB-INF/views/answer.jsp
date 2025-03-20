@@ -1,5 +1,7 @@
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.List" %>
+<%@ page import="org.example.help.model.dto.RankDTO" %>
+<%@ page import="org.example.help.model.dto.MatchResultDTO" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html>
@@ -381,7 +383,7 @@
     </header>
 
     <%
-        List<Map<String, Object>> rankList = (List<Map<String, Object>>) request.getAttribute("rankData");
+        List<RankDTO> rankList = (List<RankDTO>) request.getAttribute("rankData");
 
         // 랭크 데이터가 있는 경우 출력
         if (rankList != null && !rankList.isEmpty()) {
@@ -389,13 +391,21 @@
     <div class="rank-container">
         <h2 class="rank-title"><i class="fas fa-trophy"></i> 소환사 랭크 정보</h2>
         <div class="rank-list">
-            <% for(Map<String, Object> rank : rankList) {
-                String tier = (String)rank.get("tier");
-                String rankValue = (String)rank.get("rank");
-                String queueType = (String)rank.get("queueType");
-                int wins = (int)rank.get("wins");
-                int losses = (int)rank.get("losses");
-                int leaguePoints = (int)rank.get("leaguePoints");
+            <% for(RankDTO rank : rankList) {
+                String tier = rank.tier();
+                String rankValue = rank.rank();
+                String queueType = rank.queueType();
+                switch (queueType){
+                    case "RANKED_SOLO_5x5":
+                        queueType = "솔로 랭크";
+                        break;
+                    case "RANKED_FLEX_SR":
+                        queueType = "자유 랭크";
+                        break;
+                }
+                int wins = rank.wins();
+                int losses = rank.losses();
+                int leaguePoints = rank.leaguePoints();
                 int totalGames = wins + losses;
                 double winRate = totalGames > 0 ? (double)wins / totalGames * 100 : 0;
             %>
@@ -416,32 +426,24 @@
             <% } %>
         </div>
     </div>
-    <% } %>
     <%
-        List<List<Map<String, Object>>> matches = (List<List<Map<String, Object>>>) request.getAttribute("matches");
+        List<List<MatchResultDTO>> matches = (List<List<MatchResultDTO>>) request.getAttribute("matches");
         if (matches != null && !matches.isEmpty()) {
             int matchNum = 1;
-            for (List<Map<String, Object>> match : matches) {
-                // Determine if match has any winners to display match result
+            for (List<MatchResultDTO> match : matches) {
+                // match의 첫 플레이어를 기준으로 queueType과 승리 여부 결정 (예제에서는 첫 플레이어의 win 값을 사용)
                 boolean blueTeamWin = false;
                 String queueType = "";
-
-                for (Map<String, Object> player : match) {
-                    queueType = (String) player.get("queueType");
-                    if ((boolean) player.get("win")) {
-                        blueTeamWin = true;
-                        break;
-                    }
-                    else{
-                        blueTeamWin = false;
-                        break;
-                    }
+                if (!match.isEmpty()) {
+                    MatchResultDTO firstPlayer = match.get(0);
+                    queueType = firstPlayer.queueType();
+                    blueTeamWin = firstPlayer.win();
                 }
     %>
     <div class="match-container">
         <div class="match-header">
             <h3>게임 #<%= matchNum++ %></h3>
-            <span><%= queueType%></span>
+            <span><%= queueType %></span>
             <span><%= blueTeamWin ? "블루팀 승리" : "레드팀 승리" %></span>
         </div>
         <table>
@@ -457,28 +459,28 @@
             </thead>
             <tbody>
             <%
-                for (Map<String, Object> player : match) {
-                    boolean win = (boolean) player.get("win");
-                    int kills = (int) player.get("kills");
-                    int deaths = (int) player.get("deaths");
-                    int assists = (int) player.get("assists");
-
-                    // Calculate KDA ratio
-                    float kda = (deaths == 0) ? (kills + assists) : (float)(kills + assists) / deaths;
+                for (MatchResultDTO player : match) {
+                    boolean win = player.win();
+                    int kills = player.kills();
+                    int deaths = player.deaths();
+                    int assists = player.assists();
+                    // KDA 계산
+                    float kda = (deaths == 0) ? (kills + assists) : (float) (kills + assists) / deaths;
             %>
             <tr class="<%= win ? "win" : "lose" %>">
                 <td>
-                    <a class="summoner-name" href="<%= request.getContextPath()%>/answer?summonerName=<%=player.get("summoner")%>%23<%= player.get("summonertag")%>" title="<%= player.get("summoner")%>#<%= player.get("summonertag")%>">
-                        <%= player.get("summoner")%>#<%= player.get("summonertag")%>
+                    <a class="summoner-name" href="/answer?summonerName=<%= player.riotIdGameName() %>%23<%= player.riotIdTagline() %>"
+                       title="<%= player.riotIdGameName() %>#<%= player.riotIdTagline() %>">
+                        <%= player.riotIdGameName() %>#<%= player.riotIdTagline() %>
                     </a>
                 </td>
                 <td>
                     <div class="champion-cell">
                         <div class="champion-img-container">
-                            <img class="champion-img" src="https://ddragon.leagueoflegends.com/cdn/15.5.1/img/champion/<%=player.get("champ")%>.png" alt="<%= player.get("champ") %>">
+                            <img class="champion-img" src="https://ddragon.leagueoflegends.com/cdn/15.5.1/img/champion/<%= player.championName() %>.png" alt="<%= player.championName() %>">
                         </div>
-                        <div class="champion-name" title="<%= player.get("champ") %>">
-                            <%= player.get("champ") %>
+                        <div class="champion-name" title="<%= player.championName() %>">
+                            <%= player.championName() %>
                         </div>
                     </div>
                 </td>
@@ -491,10 +493,14 @@
                     </div>
                 </td>
                 <td class="<%= win ? "win-icon" : "lose-icon" %>">
-                    <%= win ? "<i class=\"fas fa-check-circle\"></i>" : "<i class=\"fas fa-times-circle\"></i>" %>
+                    <%= win ? "<i class='fas fa-check-circle'></i>" : "<i class='fas fa-times-circle'></i>" %>
                 </td>
-                <td class="stats hide-mobile"><i class="fas fa-coins"></i> <%= String.format("%,d", player.get("gold")) %></td>
-                <td class="stats hide-mobile"><i class="fas fa-bolt"></i> <%= String.format("%,d", player.get("damage")) %></td>
+                <td class="stats hide-mobile">
+                    <i class="fas fa-coins"></i> <%= String.format("%,d", player.goldEarned()) %>
+                </td>
+                <td class="stats hide-mobile">
+                    <i class="fas fa-bolt"></i> <%= String.format("%,d", player.totalDamageDealtToChampions()) %>
+                </td>
             </tr>
             <%
                 }
@@ -512,6 +518,7 @@
         <p>소환사 이름을 다시 확인해 주세요.</p>
     </div>
     <%
+        }
         }
     %>
 

@@ -111,10 +111,10 @@
 <div class="container">
     <div class="logo">
         <a href= "/">
-            <img src="https://i.namu.wiki/i/1bMt0wDwA1EX24-0Q4vf6WssH6hE3_gsJOA3O4ICRvXRm1FEspw8VqJ7SbjEi4OueIB11To7Fxh6XsEHRJfmrv-bjk4x4RoqOmZyp009QQV-iLGGTtIN1H9Zff6q_08nnpa22P_s5ZSnM3nySm6r3A.webp" alt="LoL Logo">
+            <img src="https://ndkoonhkiadlqwhqxlsp.supabase.co/storage/v1/object/public/logo//lollogo.png" alt="LoL Logo">
         </a>
         <a href= "/tft">
-            <img src="https://i.namu.wiki/i/0wddn0ilh67JQ4HwtzU5uerp-s9JYPnXWgQhZ4SyzcqsOH1RAMHDlR3ce4pQ68C0_eeq5zz1ngzW8LEgymD-dCqg2OyWZkZl7HD5USU_qqx_eqwzFuLdtC-NcdUqYKEnMV9nYzWk30oDq-pPVFiBDw.svg" alt="LoL Logo">
+            <img src="https://ndkoonhkiadlqwhqxlsp.supabase.co/storage/v1/object/public/logo//tftlogo.png" alt="LoL Logo">
         </a>
     </div>
     <h2><%= session.getAttribute("gameMode") %> 전적검색</h2>

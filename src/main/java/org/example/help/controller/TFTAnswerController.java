@@ -1,5 +1,6 @@
 package org.example.help.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
@@ -7,6 +8,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.example.help.model.dto.RankDTO;
+import org.example.help.model.dto.TFTRankDTO;
 import org.example.help.model.dto.puuidResponse;
 import org.example.help.service.RiotService;
 
@@ -34,6 +37,17 @@ public class TFTAnswerController extends Controller {
         try {
             summonerResponse = riotService.getSummonerName(summonerName);
             puuid = objectMapper.readValue(summonerResponse, puuidResponse.class).puuid();
+
+            String riotID = riotService.getTFTID(puuid);
+            JsonNode root = objectMapper.readTree(riotID);
+            String summonerTFTID = root.get("id").asText();
+            System.out.println("summonerTFTID = " + summonerTFTID);
+            String tftRank = riotService.getTFTRANK(summonerTFTID);
+            System.out.println("tftRank = " + tftRank);
+            List<TFTRankDTO> rankDataList = objectMapper.readValue(tftRank, new TypeReference<List<TFTRankDTO>>() {});
+
+            req.setAttribute("rankData", rankDataList);
+
         }catch (Exception e){
             session.setAttribute("error", "소환사 이름을 다시 입력해주세요.");
             System.out.println("summonerName is wrong");

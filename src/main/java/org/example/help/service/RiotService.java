@@ -40,4 +40,12 @@ public class RiotService {
     public String getTFTResult(String matchID) throws JsonProcessingException {
         return repository.callAPI(new RiotAPIParam(matchID, ModelType.TFTMATCHID));
     }
+
+    public String getTFTID(String matchID) throws JsonProcessingException {
+        return repository.callAPI(new RiotAPIParam(matchID, ModelType.TFTID));
+    }
+
+    public String getTFTRANK(String matchID) throws JsonProcessingException {
+        return repository.callAPI(new RiotAPIParam(matchID, ModelType.TFTRANK));
+    }
 }
