@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpSession;
 import org.example.help.model.dto.MatchResultDTO;
 import org.example.help.model.dto.RankDTO;
 import org.example.help.model.dto.puuidResponse;
+import org.example.help.service.GeminiService;
 import org.example.help.service.RiotService;
 
 import java.io.IOException;
@@ -20,11 +21,13 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 @WebServlet("/answer")
 public class AnswerController extends Controller {
     final static RiotService riotService = RiotService.getInstance();
     final static ObjectMapper objectMapper = new ObjectMapper();
+    final static GeminiService geminiService = new GeminiService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
@@ -38,7 +41,7 @@ public class AnswerController extends Controller {
             resp.sendRedirect("/");
             return;
         }
-
+        summonerName = summonerName.replace(" ", "");
         log(summonerName);
         String summonerResponse = "";
         String puuid = "";
@@ -67,7 +70,11 @@ public class AnswerController extends Controller {
 
 
         List<List<MatchResultDTO>> matches = new ArrayList<>();
+        List<String> recentChampions = new ArrayList<>();
 
+// KDA와 CS 저장을 위한 Map
+        Map<String, List<Float>> championKdaMap = new HashMap<>();
+        Map<String, List<Integer>> championCsMap = new HashMap<>();
 // records 배열에 있는 각 매치 ID에 대해 처리
         for (String record : records) {
             try {
@@ -104,9 +111,28 @@ public class AnswerController extends Controller {
 
                 // participants 배열 추출
                 ArrayNode participants = (ArrayNode) info.get("participants");
+                String myChampion = null;
+                int minionsKilled = 0;
+                float mykda = 0;
                 // 각 참가자 JSON 객체에 queueType 추가
                 for (JsonNode participant : participants) {
                     ((ObjectNode) participant).put("queueType", queueType);
+
+                    if (participant.get("puuid").asText().equalsIgnoreCase(puuid)) {
+                        myChampion = participant.get("championName").asText();
+                        minionsKilled = participant.get("totalMinionsKilled").asInt() + participant.get("neutralMinionsKilled").asInt();
+                        mykda = (float) (participant.get("kills").asInt() + participant.get("assists").asInt()) / Math.max(1, participant.get("deaths").asInt());
+
+                        recentChampions.add(myChampion);
+
+                        // KDA 저장
+                        championKdaMap.putIfAbsent(myChampion, new ArrayList<>());
+                        championKdaMap.get(myChampion).add(mykda);
+
+                        // CS 저장
+                        championCsMap.putIfAbsent(myChampion, new ArrayList<>());
+                        championCsMap.get(myChampion).add(minionsKilled);
+                    }
                 }
 
                 // participants JSON 배열을 문자열로 변환한 후 DTO 리스트로 변환
@@ -121,7 +147,45 @@ public class AnswerController extends Controller {
                 matches.add(new ArrayList<>());
             }
         }
-        System.out.println("matches = " + matches);
+
+        Map<String, Integer> championFrequency = new LinkedHashMap<>();
+        for (String champ : recentChampions) {
+            championFrequency.put(champ, championFrequency.getOrDefault(champ, 0) + 1);
+        }
+
+        List<Map.Entry<String, Integer>> sortedChampions = new ArrayList<>(championFrequency.entrySet());
+        sortedChampions.sort((a, b) -> b.getValue() - a.getValue());
+
+// 가장 많이 플레이한 챔피언 Top 3
+        List<String> topChampions = sortedChampions.stream()
+                .limit(3)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+// 평균 KDA 및 CS 계산
+        float avgKda = 0;
+        int avgCs = 0;
+        if (!topChampions.isEmpty()) {
+            int kdaCount = 0, csCount = 0;
+            for (String champ : topChampions) {
+                List<Float> kdaList = championKdaMap.getOrDefault(champ, new ArrayList<>());
+                List<Integer> csList = championCsMap.getOrDefault(champ, new ArrayList<>());
+
+                avgKda += kdaList.stream().mapToDouble(Float::doubleValue).sum();
+                kdaCount += kdaList.size();
+
+                avgCs += csList.stream().mapToInt(Integer::intValue).sum();
+                csCount += csList.size();
+            }
+            avgKda = kdaCount > 0 ? avgKda / kdaCount : 0;
+            avgCs = csCount > 0 ? avgCs / csCount : 0;
+        }
+
+        String response = geminiService.answerQuestion(topChampions, avgKda, avgCs);
+        System.out.println("response = " + response);
+
+        req.setAttribute("response", response);
+
         req.setAttribute("matches", matches);
         view(req, resp, "answer");
     }

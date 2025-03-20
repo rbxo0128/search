@@ -130,11 +130,5 @@
         본 서비스는 Riot Games의 공식 사이트가 아니며, Riot Games의 API를 활용한 비공식 서비스입니다.
     </footer>
 </div>
-<script>
-    document.querySelector("form").addEventListener("submit", function(event) {
-        let input = document.getElementById("summonerName");
-        input.value = input.value.replace(/\s+/g, "");
-    });
-</script>
 </body>
 </html>

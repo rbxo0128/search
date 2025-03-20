@@ -32,6 +32,8 @@ public class TFTAnswerController extends Controller {
         String summonerName = req.getParameter("summonerName");
         HttpSession session = req.getSession();
 
+        summonerName = summonerName.replace(" ", "");
+
         String summonerResponse = "";
         String puuid = "";
         try {

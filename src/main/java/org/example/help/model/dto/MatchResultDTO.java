@@ -12,5 +12,7 @@ public record MatchResultDTO(String riotIdGameName,
                              boolean win,
                              int goldEarned,
                              int totalDamageDealtToChampions,
-                             String queueType) {
+                             String queueType,
+                             int totalMinionsKilled,
+                             int neutralMinionsKilled) {
 }

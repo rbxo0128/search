@@ -373,6 +373,94 @@
                 flex: 0 0 48px;
             }
         }
+
+        .result-container {
+            background-color: var(--secondary);
+            border-radius: 10px;
+            margin-bottom: 30px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: var(--accent);
+        }
+
+        .result-title {
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-content {
+            line-height: 1.8;
+            font-size: 1.05rem;
+            padding: 5px 0;
+        }
+
+        .result-content p {
+            margin-bottom: 12px;
+        }
+
+        .result-content strong, .result-content b {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .result-content ul, .result-content ol {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        .result-content li {
+            margin-bottom: 8px;
+        }
+
+        .highlight-box {
+            background-color: rgba(200, 155, 60, 0.1);
+            border-left: 3px solid var(--accent);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .win-highlight {
+            color: var(--win);
+            font-weight: bold;
+        }
+
+        .lose-highlight {
+            color: var(--lose);
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .result-container {
+                padding: 15px;
+            }
+
+            .result-title {
+                font-size: 1.3rem;
+            }
+
+            .result-content {
+                font-size: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -424,6 +512,13 @@
                 </div>
             </div>
             <% } %>
+        </div>
+    </div>
+<%--   최근 경기를 보고 LLM이 응답 해주는 컨테이너 여기를 수정 원함--%>
+    <div class="result-container">
+        <h2 class="result-title"><i class="fas fa-robot"></i> AI 전적 분석</h2>
+        <div class="result-content">
+            <%= request.getAttribute("response").toString().replace("\n", "<br>") %>
         </div>
     </div>
     <%
